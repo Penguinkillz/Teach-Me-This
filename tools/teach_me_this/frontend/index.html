@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Teach Me This</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      :root {
+        --bg: #0f172a;
+        --bg-elevated: #020617;
+        --card: #020617;
+        --border: #1f2937;
+        --accent: #38bdf8;
+        --accent-soft: rgba(56, 189, 248, 0.15);
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --danger: #f97373;
+        --green: #4ade80;
+        --green-soft: rgba(74, 222, 128, 0.15);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+          "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #1f2937 0, #020617 50%, #000 100%);
+        color: var(--text);
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .app-shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+        gap: 24px;
+        width: 100%;
+        max-width: 1260px;
+        background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.9));
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        box-shadow:
+          0 22px 60px rgba(15, 23, 42, 0.85),
+          0 0 0 1px rgba(15, 23, 42, 0.9);
+        overflow: hidden;
+        backdrop-filter: blur(20px);
+      }
+
+      .left-pane,
+      .right-pane {
+        padding: 20px 22px;
+        overflow: auto;
+      }
+
+      .left-pane {
+        border-right: 1px solid rgba(31, 41, 55, 0.85);
+        background: radial-gradient(circle at top left, #020617 0, #020617 45%, #020617 100%);
+      }
+
+      .right-pane {
+        background: radial-gradient(circle at top right, #020617 0, #020617 45%, #020617 100%);
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+
+      .title-block {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .logo {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: radial-gradient(circle at 20% 20%, #a78bfa, #7c3aed 45%, #4c1d95 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow:
+          0 0 0 1px rgba(167, 139, 250, 0.6),
+          0 8px 22px rgba(76, 29, 149, 0.9);
+        font-weight: 700;
+        font-size: 18px;
+        color: #ede9fe;
+      }
+
+      h1 {
+        font-size: 19px;
+        margin: 0;
+        letter-spacing: 0.03em;
+      }
+
+      .subtitle {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      .badge {
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        font-size: 11px;
+        color: var(--muted);
+        background: radial-gradient(circle at top left, #020617 0, #020617 50%, #020617 100%);
+        white-space: nowrap;
+      }
+
+      .form-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      label {
+        display: block;
+        font-size: 12px;
+        margin-bottom: 6px;
+        color: var(--muted);
+      }
+
+      .field {
+        background: radial-gradient(circle at top left, #020617 0, #020617 50%, #020617 100%);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        padding: 10px 10px 8px;
+        transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease,
+          background 0.15s ease;
+      }
+
+      .field:focus-within {
+        border-color: rgba(167, 139, 250, 0.9);
+        box-shadow:
+          0 0 0 1px rgba(167, 139, 250, 0.5),
+          0 0 0 8px rgba(167, 139, 250, 0.07);
+      }
+
+      .field.disabled {
+        opacity: 0.45;
+        pointer-events: none;
+      }
+
+      .field-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 2px;
+      }
+
+      .field-title {
+        font-size: 12px;
+        color: #e5e7eb;
+      }
+
+      .field-hint {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .coming-soon-badge {
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 999px;
+        border: 1px solid rgba(167, 139, 250, 0.5);
+        color: #a78bfa;
+        background: rgba(167, 139, 250, 0.08);
+        letter-spacing: 0.05em;
+      }
+
+      textarea,
+      input,
+      select {
+        width: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 13px;
+        resize: vertical;
+      }
+
+      textarea::placeholder,
+      input::placeholder {
+        color: #4b5563;
+      }
+
+      textarea { min-height: 70px; }
+
+      select option {
+        background: #0f172a;
+      }
+
+      .inline-fields {
+        display: flex;
+        gap: 10px;
+      }
+
+      .inline-fields .field { flex: 1; }
+
+      .controls-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+      }
+
+      .left-controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .chip {
+        padding: 4px 9px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        cursor: default;
+      }
+
+      .btn-primary {
+        border: none;
+        outline: none;
+        border-radius: 999px;
+        padding: 9px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #1e1b4b;
+        background: radial-gradient(circle at 20% 0, #a78bfa, #7c3aed 50%, #4c1d95 100%);
+        box-shadow:
+          0 12px 25px rgba(76, 29, 149, 0.9),
+          0 0 0 1px rgba(167, 139, 250, 0.6);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition:
+          transform 0.08s ease,
+          box-shadow 0.08s ease,
+          filter 0.08s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-0.5px);
+        filter: brightness(1.08);
+        box-shadow:
+          0 16px 32px rgba(76, 29, 149, 0.95),
+          0 0 0 1px rgba(167, 139, 250, 0.7);
+      }
+
+      .btn-primary:active {
+        transform: translateY(0.5px) scale(0.99);
+      }
+
+      .btn-primary[disabled] {
+        opacity: 0.7;
+        cursor: wait;
+        box-shadow: none;
+      }
+
+      .results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 16px;
+      }
+
+      .results-title {
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .results-meta {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .empty-state {
+        margin-top: 14px;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .status {
+        margin-top: 8px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .status.error { color: var(--danger); }
+
+      .sections {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .section-card {
+        border-radius: 12px;
+        border: 1px solid rgba(31, 41, 55, 0.9);
+        background: radial-gradient(circle at top left, rgba(15, 23, 42, 1) 0, #020617 55%, #020617 100%);
+        overflow: hidden;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 12px;
+        cursor: pointer;
+        user-select: none;
+        border-bottom: 1px solid rgba(31, 41, 55, 0.0);
+        transition: background 0.1s ease;
+      }
+
+      .section-header:hover {
+        background: rgba(31, 41, 55, 0.3);
+      }
+
+      .section-header.open {
+        border-bottom: 1px solid rgba(31, 41, 55, 0.85);
+      }
+
+      .section-icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        flex-shrink: 0;
+      }
+
+      .section-label {
+        font-size: 12px;
+        font-weight: 500;
+        flex: 1;
+      }
+
+      .section-chevron {
+        font-size: 10px;
+        color: var(--muted);
+        transition: transform 0.2s ease;
+      }
+
+      .section-chevron.open { transform: rotate(180deg); }
+
+      .section-body {
+        padding: 12px 14px;
+        font-size: 13px;
+        line-height: 1.7;
+        color: var(--text);
+        display: none;
+      }
+
+      .section-body.open { display: block; }
+
+      .section-body ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .section-body li {
+        margin-bottom: 4px;
+      }
+
+      .practice-item {
+        border-radius: 8px;
+        border: 1px solid rgba(31, 41, 55, 0.85);
+        margin-bottom: 6px;
+        font-size: 12px;
+        overflow: hidden;
+        transition: border-color 0.15s ease;
+      }
+
+      .practice-item:has(.practice-answer.open) {
+        border-color: rgba(167, 139, 250, 0.4);
+      }
+
+      .practice-question-row {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        padding: 9px 10px;
+        cursor: default;
+      }
+
+      .practice-num {
+        font-size: 10px;
+        font-weight: 600;
+        color: #a78bfa;
+        flex-shrink: 0;
+        letter-spacing: 0.05em;
+      }
+
+      .practice-q-text {
+        flex: 1;
+        line-height: 1.5;
+        color: var(--text);
+      }
+
+      .practice-toggle {
+        font-size: 10px;
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.35);
+        border-radius: 999px;
+        padding: 2px 8px;
+        cursor: pointer;
+        flex-shrink: 0;
+        white-space: nowrap;
+        transition: background 0.12s ease, color 0.12s ease;
+      }
+
+      .practice-toggle:hover {
+        background: rgba(167, 139, 250, 0.12);
+      }
+
+      .practice-answer {
+        display: none;
+        padding: 8px 10px 9px 28px;
+        font-size: 12px;
+        color: #c4b5fd;
+        border-top: 1px solid rgba(167, 139, 250, 0.2);
+        background: rgba(167, 139, 250, 0.06);
+        line-height: 1.6;
+      }
+
+      .practice-answer.open { display: block; }
+
+      .practice-list { display: flex; flex-direction: column; }
+
+      .icon-purple { background: rgba(167, 139, 250, 0.15); color: #a78bfa; }
+      .icon-blue   { background: rgba(56, 189, 248, 0.15);  color: #38bdf8; }
+      .icon-green  { background: rgba(74, 222, 128, 0.15);  color: #4ade80; }
+      .icon-amber  { background: rgba(251, 191, 36, 0.15);  color: #fbbf24; }
+      .icon-pink   { background: rgba(244, 114, 182, 0.15); color: #f472b6; }
+
+      @media (max-width: 900px) {
+        body { padding: 12px; }
+        .app-shell { grid-template-columns: minmax(0, 1fr); }
+        .left-pane {
+          border-right: none;
+          border-bottom: 1px solid rgba(31, 41, 55, 0.85);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <section class="left-pane">
+        <header class="header">
+          <div class="title-block">
+            <div class="logo">&#9733;</div>
+            <div>
+              <h1>Teach Me This</h1>
+              <div class="subtitle">Your AI personal explainer.</div>
+            </div>
+          </div>
+          <div class="badge">Standalone</div>
+        </header>
+
+        <form id="teach-form" class="form-grid">
+          <div class="field">
+            <div class="field-header">
+              <div class="field-title">Topic or question</div>
+              <div class="field-hint">Required</div>
+            </div>
+            <textarea id="topic" rows="3" placeholder="e.g. How does photosynthesis work? or Newton's second law"></textarea>
+          </div>
+
+          <div class="field">
+            <div class="field-header">
+              <div class="field-title">Source material</div>
+              <div class="field-hint">Upload PDF / DOCX or paste notes</div>
+            </div>
+            <input type="file" id="source-files" accept=".pdf,.docx" multiple style="margin-bottom: 8px; font-size: 12px;" />
+            <textarea id="sources-text" placeholder="Or paste your notes / article text here. Both work together." rows="4"></textarea>
+          </div>
+
+          <div class="inline-fields">
+            <div class="field">
+              <div class="field-header"><div class="field-title">Level</div></div>
+              <select id="level">
+                <option value="Explain Like I'm 10">Explain Like I'm 10</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate" selected>Intermediate</option>
+                <option value="Advanced">Advanced</option>
+                <option value="Exam Revision Mode">Exam Revision Mode</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="field-header"><div class="field-title">Style</div></div>
+              <select id="style">
+                <option value="Simple Explanation" selected>Simple Explanation</option>
+                <option value="Step-by-step Breakdown">Step-by-step Breakdown</option>
+                <option value="Real-life Analogies">Real-life Analogies</option>
+                <option value="Exam-oriented Answer">Exam-oriented Answer</option>
+                <option value="Bullet Summary">Bullet Summary</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field disabled" title="Coming soon">
+            <div class="field-header">
+              <div class="field-title">YouTube link</div>
+              <span class="coming-soon-badge">Coming soon</span>
+            </div>
+            <input type="url" id="youtube-url" placeholder="https://youtube.com/watch?v=..." disabled />
+          </div>
+
+          <div class="controls-row">
+            <div class="left-controls"><span class="chip">Teach Me This</span></div>
+            <button type="submit" class="btn-primary" id="explain-btn">
+              <span id="explain-label">Teach me this</span>
+              <span id="explain-spinner" style="display:none">...</span>
+            </button>
+          </div>
+
+          <div id="status" class="status"></div>
+        </form>
+      </section>
+
+      <section class="right-pane">
+        <div class="results-header">
+          <div class="results-title">Explanation</div>
+          <div class="results-meta" id="results-meta">Nothing yet.</div>
+        </div>
+        <div id="sections" class="sections"></div>
+        <div class="empty-state" id="empty-state">
+          Enter a topic or question on the left, choose your level and style, then hit
+          <strong>Teach me this</strong>. You can also paste notes or upload a PDF/DOCX
+          to get an explanation of your own content.
+        </div>
+      </section>
+    </div>
+
+    <script src="./main.js"></script>
+  </body>
+</html>
