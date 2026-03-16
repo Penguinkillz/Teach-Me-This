@@ -15,7 +15,7 @@
 
 # next.js
 /.next/
-/out/
+# /out/ — intentionally committed so Railway (Python-only) can serve the static export
 
 # production
 /build
