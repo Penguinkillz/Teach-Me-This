@@ -8,3 +8,8 @@ __pycache__/
 .vscode/
 .DS_Store
 *.log
+
+# Next.js — keep out/ committed, exclude build cache and deps
+frontend/.next/
+frontend/node_modules/
+frontend/.env.local

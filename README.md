@@ -1,117 +1,62 @@
 # Teach Me This
 
-An AI personal explainer for students. Enter a topic or upload your notes — get a structured explanation, real-life examples, key points, and practice questions with reveal-on-click answers.
+An AI personal explainer. Enter a topic, upload your notes — get a structured explanation, real-life examples, key points, and practice questions with reveal-on-click answers.
 
 ## Features
 
-- **Input:** Type any topic or question; optionally upload PDF/DOCX or paste notes
+- **Input:** Topic/question, optional PDF/DOCX upload, optional paste notes
 - **Level:** Explain Like I'm 10 | Beginner | Intermediate | Advanced | Exam Revision Mode
 - **Style:** Simple Explanation | Step-by-step | Real-life Analogies | Exam-oriented | Bullet Summary
-- **Output (always 5 sections):**
-  1. Simple explanation (plain-language overview)
-  2. Detailed explanation (shaped by your chosen style)
-  3. Real-life example or analogy
-  4. Key points summary (bullets)
-  5. Five practice questions with answers (click to reveal)
-- **YouTube:** Field in UI marked "Coming soon" — architecture ready to plug in later
+- **Output:** 5 collapsible sections — simple explanation, detailed explanation, real-life example, key points, 5 practice questions (answers reveal on click)
+- **YouTube:** Field present, coming soon
 
-No accounts, no storage. Runs locally or on your own deployment.
+## Stack
 
-## Local setup
+- **Backend:** Python, FastAPI, Groq (Llama 3.3 70B), pypdf, python-docx
+- **Frontend:** Next.js 15, TypeScript, Tailwind CSS, Framer Motion, Lucide icons
+- **Deploy:** Railway (single service — FastAPI serves the pre-built Next.js static export)
 
-### Prerequisites
+## Local development
 
-- Python 3.10+
-- A [Groq API key](https://console.groq.com/) (free tier is enough)
-
-### Steps
+### Terminal 1 — FastAPI backend
 
 ```bash
-git clone https://github.com/Penguinkillz/teach-me-this.git
-cd teach-me-this
-
 python -m venv .venv
-
-# Windows
-.\.venv\Scripts\Activate.ps1
-
-# Mac/Linux
-source .venv/bin/activate
-
+.venv\Scripts\Activate.ps1        # Windows
+# source .venv/bin/activate       # Mac/Linux
 pip install -r requirements.txt
-```
-
-Create a `.env` file (copy from `.env.example`):
-
-```
-PLATFORM_GROQ_API_KEY=your_groq_key_here
-```
-
-Run the server:
-
-```bash
+copy .env.example .env            # then set PLATFORM_GROQ_API_KEY
 uvicorn main:app --reload --port 8000
 ```
 
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000)
+### Terminal 2 — Next.js frontend
+
+```bash
+cd frontend
+copy .env.example .env.local
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) (frontend) — API calls proxy to port 8000.
 
 ## Deploy on Railway
 
-1. **Push this repo to GitHub** (if you haven’t already):
-   - Create a new repo on GitHub (e.g. `teach-me-this`).
-   - From the project folder:
-     ```bash
-     git init
-     git add .
-     git commit -m "Teach Me This standalone"
-     git remote add origin https://github.com/YOUR_USERNAME/teach-me-this.git
-     git branch -M main
-     git push -u origin main
-     ```
+1. Push this repo to GitHub (includes `frontend/out/` — pre-built static files).
+2. New Railway project → Deploy from GitHub → select this repo → branch `main`.
+3. Railway uses `railway.json` → runs `pip install -r requirements.txt` then `uvicorn main:app`.
+4. Add env variable: `PLATFORM_GROQ_API_KEY` = your Groq key.
+5. Generate a public domain under Settings → Networking.
 
-2. **Create a new project on Railway**
-   - Go to [railway.app](https://railway.app) and sign in.
-   - Click **New Project** → **Deploy from GitHub repo**.
-   - Select your **teach-me-this** repo (not the quiz one).
-   - Choose the **main** branch.
+## After frontend changes
 
-3. **Configure the service**
-   - Railway will detect the **Procfile** and use:  
-     `web: python -m uvicorn main:app --host 0.0.0.0 --port $PORT`
-   - No build command needed; Railway runs `pip install -r requirements.txt` by default for Python.
-
-4. **Set environment variables**
-   - In the Railway project, open your service → **Variables**.
-   - Add:
-     - `PLATFORM_GROQ_API_KEY` = your Groq API key  
-   - Optional: `PLATFORM_GROQ_API_KEY_2`, `PLATFORM_GROQ_API_KEY_3`, `PLATFORM_OPENAI_API_KEY` (fallback).
-
-5. **Get your URL**
-   - Open **Settings** → **Networking** → **Generate domain** (or use the one Railway created).
-   - Your app will be live at `https://your-app-name.up.railway.app`.
-
-6. **Redeploys**
-   - Every push to `main` triggers a new deploy. No extra step.
-
-## Project structure
-
-```
-├── main.py                     # FastAPI app, teach router + frontend at /
-├── core/
-│   ├── config.py               # PLATFORM_* env vars
-│   ├── llm.py                  # Groq/OpenAI client, key rotation
-│   └── file_extract.py         # PDF/DOCX text extraction
-├── tools/
-│   └── teach_me_this/
-│       ├── models.py           # ExplainRequest, ExplainSection, etc.
-│       ├── service.py          # Prompt build, LLM call, JSON parse
-│       ├── router.py           # /api/teach/explain, /api/teach/explain-from-files
-│       └── frontend/
-│           ├── index.html
-│           └── main.js
-├── requirements.txt
-├── Procfile                    # Railway: web = uvicorn main:app ...
-└── .env.example
+```bash
+cd frontend
+npm run build          # regenerates frontend/out/
+cd ..
+git add -A
+git commit -m "update frontend"
+git push
 ```
 
 ## Environment variables
@@ -121,12 +66,6 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000)
 | `PLATFORM_GROQ_API_KEY` | Yes | Groq API key (primary LLM) |
 | `PLATFORM_GROQ_API_KEY_2` | No | Second key for rotation |
 | `PLATFORM_GROQ_API_KEY_3` | No | Third key for rotation |
-| `PLATFORM_OPENAI_API_KEY` | No | OpenAI fallback if no Groq keys |
+| `PLATFORM_OPENAI_API_KEY` | No | OpenAI fallback |
 
-## Tech stack
-
-- **Backend:** Python, FastAPI
-- **LLM:** Groq (Llama 3.3 70B) with optional OpenAI fallback
-- **File parsing:** pypdf, python-docx
-- **Frontend:** HTML, CSS, JS (no build step)
-- **Deploy:** Railway (Procfile included)
+> **Note:** This is an MVP. A full tech stack upgrade, auth, payments, and backend improvements are planned.

@@ -82,8 +82,34 @@ def _sanitize(content: str) -> str:
     return content
 
 
+_VALID_ESCAPES = set('"\\\/bfnrtu')
+
+
+def _fix_json_escapes(content: str) -> str:
+    """Replace invalid JSON escape sequences (e.g. \\s, \\.) with the literal character."""
+    result = []
+    i = 0
+    while i < len(content):
+        ch = content[i]
+        if ch == '\\' and i + 1 < len(content):
+            next_ch = content[i + 1]
+            if next_ch in _VALID_ESCAPES:
+                result.append(ch)
+                result.append(next_ch)
+                i += 2
+            else:
+                # Drop the backslash, keep the literal character
+                result.append(next_ch)
+                i += 2
+        else:
+            result.append(ch)
+            i += 1
+    return ''.join(result)
+
+
 def _parse_response(content: str) -> dict:
     content = _sanitize(content)
+    content = _fix_json_escapes(content)
     try:
         return json.loads(content)
     except json.JSONDecodeError:
@@ -111,6 +137,7 @@ def explain(payload: ExplainRequest) -> ExplainResponse:
                 {"role": "user", "content": prompt},
             ],
             temperature=0.7,
+            response_format={"type": "json_object"},
         )
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"LLM API error: {exc}") from exc
